@@ -18,7 +18,8 @@ spring:
         refetch-instances-interval: 15m
         update-results-list: true
       retry:
-        retryable-status-codes: 500, 502, 503, 504, 404, 403, 429
+        enabled: true
+        retryable-status-codes: [500, 502, 503, 504, 404, 403, 429]
     discovery:
       reactive:
         enabled: false
