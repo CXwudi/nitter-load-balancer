@@ -1,0 +1,24 @@
+
+user-agent: ${spring.application.name}
+perform-deep-check: false
+nitter-status-api: https://status.d420.de/api/v1/instances
+
+spring:
+  application:
+    name: Nitter Load Balancer
+  cloud:
+    loadbalancer:
+      health-check:
+        path:
+          # the key must be same as the service-id
+          default: /elonmusk/rss
+        repeat-health-check: false
+        interval: 15m # not used when repeat-health-check is false
+        refetch-instances: true # need this because our discovery client does not emit
+        refetch-instances-interval: 15m
+        update-results-list: true
+      retry:
+        retryable-status-codes: 500, 502, 503, 504, 404, 403, 429
+    discovery:
+      reactive:
+        enabled: false

@@ -1,0 +1,14 @@
+
+perform-deep-check: true
+
+logging:
+  level:
+    mikufan:
+      cx: debug
+    org:
+      springframework:
+        cloud:
+          loadbalancer: debug
+        web:
+          client:
+            RestTemplate: debug
