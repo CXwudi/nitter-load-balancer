@@ -12,3 +12,8 @@ logging:
         web:
           client:
             RestTemplate: debug
+    reactor:
+      netty:
+        http:
+          client: debug
+          client.HttpClientOperations: INFO

@@ -6,23 +6,26 @@ import org.springframework.beans.factory.annotation.Value
 import org.springframework.cloud.client.DefaultServiceInstance
 import org.springframework.cloud.client.ServiceInstance
 import org.springframework.cloud.client.discovery.DiscoveryClient
+import org.springframework.cloud.client.discovery.ReactiveDiscoveryClient
 import org.springframework.stereotype.Component
+import reactor.core.publisher.Flux
 
 @Component
 class NitterRssInstancesDiscoveryClient(
   private val statusFetcher: CachingInstanceStatusFetcher,
-) : DiscoveryClient {
+) : ReactiveDiscoveryClient {
 
   override fun description() = "Nitter RSS Instances Discovery Client"
 
-  override fun getServices(): MutableList<String> = mutableListOf("default")
+  override fun getServices(): Flux<String>? = Flux.just("default")
 
-  override fun getInstances(serviceId: String?): MutableList<ServiceInstance> {
+  override fun getInstances(serviceId: String?): Flux<ServiceInstance> {
     val instancesStatus: InstancesStatus = statusFetcher.getInstancesStatus()
     return instancesStatus.instanceHosts
       .filter { isAvailableWithRss(it) }
       .map { toServiceInstance(it) }
       .toMutableList()
+      .let { Flux.fromIterable(it) }
   }
 
   internal fun isAvailableWithRss(host: InstanceHost): Boolean {

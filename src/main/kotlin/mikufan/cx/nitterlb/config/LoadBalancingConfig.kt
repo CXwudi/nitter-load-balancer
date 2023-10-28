@@ -6,6 +6,7 @@ import org.springframework.context.ConfigurableApplicationContext
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.web.client.RestTemplate
+import org.springframework.web.reactive.function.client.WebClient
 
 
 @Configuration(proxyBeanMethods = false)
@@ -16,9 +17,10 @@ class LoadBalancingConfig {
     context: ConfigurableApplicationContext
   ): ServiceInstanceListSupplier {
     return ServiceInstanceListSupplier.builder()
-      .withBlockingDiscoveryClient() // already included a specialized caching
+      .withDiscoveryClient() // already included a specialized caching
       // can figure out the double-checking problem
 //      .withBlockingHealthChecks(context.getBean<RestTemplate>("restTemplateForHealthCheckAndFetching"))
+      .withHealthChecks(context.getBean<WebClient>("fetchingAndHealthCheckWebClient"))
       .withWeighted { it.metadata["score"]?.toInt() ?: 0 }
       .withCaching() // another level of caching
       .withRetryAwareness()

@@ -1,7 +1,10 @@
 package mikufan.cx.nitterlb.config
 
 import org.springframework.beans.factory.annotation.Value
+import org.springframework.boot.autoconfigure.EnableAutoConfiguration
+import org.springframework.boot.autoconfigure.ImportAutoConfiguration
 import org.springframework.boot.autoconfigure.http.HttpMessageConverters
+import org.springframework.boot.autoconfigure.web.client.RestTemplateAutoConfiguration
 import org.springframework.boot.web.client.RestTemplateBuilder
 import org.springframework.boot.web.client.RestTemplateCustomizer
 import org.springframework.cloud.client.loadbalancer.LoadBalanced
@@ -19,7 +22,7 @@ import org.springframework.web.client.RestTemplate
 const val NITTER_INSTANCES = "nitter-instances"
 
 @Configuration
-@LoadBalancerClient(name = NITTER_INSTANCES, configuration = [LoadBalancingConfig::class])
+//@LoadBalancerClient(name = NITTER_INSTANCES, configuration = [LoadBalancingConfig::class])
 class RestTemplateConfig {
 
   @Bean
@@ -43,18 +46,20 @@ class RestTemplateConfig {
     }
   }
 
-  @Bean
-  fun restTemplateForHealthCheckAndFetching(
-    restTemplateBuilder: RestTemplateBuilder
-  ): RestTemplate {
-    return restTemplateBuilder.build()
-  }
+//  @Bean
+//  fun restTemplateForHealthCheckAndFetching(
+//    customizers: List<RestTemplateCustomizer>
+//  ): RestTemplate {
+//    return RestTemplateBuilder()
+//      .additionalCustomizers(customizers)
+//      .build()
+//  }
 
-  @Bean
-  @LoadBalanced
-  fun restTemplateForLoadBalancing(
-    restTemplateBuilder: RestTemplateBuilder
-  ): RestTemplate {
-    return restTemplateBuilder.build()
-  }
+//  @Bean
+//  @LoadBalanced
+//  fun restTemplateForLoadBalancing(
+//    restTemplateBuilder: RestTemplateBuilder
+//  ): RestTemplate {
+//    return restTemplateBuilder.build()
+//  }
 }
