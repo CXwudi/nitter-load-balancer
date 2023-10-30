@@ -1,11 +1,11 @@
 package mikufan.cx.nitterlb.config
 
+import org.springframework.beans.factory.annotation.Value
 import org.springframework.beans.factory.getBean
 import org.springframework.cloud.loadbalancer.core.ServiceInstanceListSupplier
 import org.springframework.context.ConfigurableApplicationContext
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
-import org.springframework.web.client.RestTemplate
 import org.springframework.web.reactive.function.client.WebClient
 
 
@@ -14,13 +14,18 @@ class LoadBalancingConfig {
 
   @Bean
   fun nitterServiceInstanceListSupplier(
-    context: ConfigurableApplicationContext
+    context: ConfigurableApplicationContext,
+    @Value("\${enable-health-check:false}")
+    enableHealthCheck: Boolean,
   ): ServiceInstanceListSupplier {
     return ServiceInstanceListSupplier.builder()
       .withDiscoveryClient() // already included a specialized caching
-      // can figure out the double-checking problem
-//      .withBlockingHealthChecks(context.getBean<RestTemplate>("restTemplateForHealthCheckAndFetching"))
-      .withHealthChecks(context.getBean<WebClient>("fetchingAndHealthCheckWebClient"))
+      .apply {
+        // can't figure out the double-checking problem, hence providing the option to disable health check
+        if (enableHealthCheck){
+          withHealthChecks(context.getBean<WebClient>("fetchingAndHealthCheckWebClient"))
+        }
+      }
       .withWeighted { it.metadata["score"]?.toInt() ?: 0 }
       .withCaching() // another level of caching
       .withRetryAwareness()

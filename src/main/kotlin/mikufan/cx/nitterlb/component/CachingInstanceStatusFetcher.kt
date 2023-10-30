@@ -1,17 +1,11 @@
 package mikufan.cx.nitterlb.component
 
 import mikufan.cx.inlinelogging.KInlineLogging
-import mikufan.cx.nitterlb.model.InstanceHost
 import mikufan.cx.nitterlb.model.InstancesStatus
 import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.beans.factory.annotation.Value
-import org.springframework.cache.CacheManager
 import org.springframework.stereotype.Component
-import org.springframework.web.client.RestTemplate
-import org.springframework.web.client.getForObject
 import org.springframework.web.reactive.function.client.WebClient
-import org.springframework.web.util.UriComponentsBuilder
-import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
 import java.net.URI
 import java.time.ZonedDateTime
@@ -29,16 +23,10 @@ class CachingInstanceStatusFetcher(
   private val lock = Any()
   private var cachedResult: InstancesStatus? = null
 
-  fun getInstancesStatus(): InstancesStatus {
-    synchronized(lock) {
-      if (cachedResult != null && cachedResult!!.lastUpdate.isAfter(ZonedDateTime.now().minusMinutes(15))) {
-        log.debug { "Returning cached result" }
-      } else {
-        log.debug { "Fetching new result from $statusApi" }
-        cachedResult = realGet().toFuture().get()
-      }
-    }
-    return cachedResult!!
+  fun getInstancesStatus(): Mono<InstancesStatus> {
+    return Mono.justOrEmpty(cachedResult).filter { it.lastUpdate.isAfter(ZonedDateTime.now().minusMinutes(15)) }
+      .switchIfEmpty(realGet())
+      .doOnNext { synchronized(lock) { cachedResult = it } }
   }
 
 //  fun getInstancesStatus(): InstancesStatus {

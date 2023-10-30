@@ -8,6 +8,11 @@ import org.springframework.context.annotation.Configuration
 import org.springframework.http.HttpHeaders
 import org.springframework.web.reactive.function.client.WebClient
 
+/**
+ * To be used in URL for load balancing
+ */
+const val NITTER_INSTANCES = "nitter-instances"
+
 @Configuration
 @LoadBalancerClient(name = NITTER_INSTANCES, configuration = [LoadBalancingConfig::class])
 class WebClientConfig {
