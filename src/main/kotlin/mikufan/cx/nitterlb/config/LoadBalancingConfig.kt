@@ -20,10 +20,12 @@ class LoadBalancingConfig {
   ): ServiceInstanceListSupplier {
     return ServiceInstanceListSupplier.builder()
       .withDiscoveryClient() // already included a specialized caching
-      .apply {
+      .run {
         // can't figure out the double-checking problem, hence providing the option to disable health check
         if (enableHealthCheck){
           withHealthChecks(context.getBean<WebClient>("fetchingAndHealthCheckWebClient"))
+        } else {
+          this
         }
       }
       .withWeighted { it.metadata["score"]?.toInt() ?: 0 }
