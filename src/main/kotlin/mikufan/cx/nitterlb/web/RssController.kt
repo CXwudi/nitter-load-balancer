@@ -23,7 +23,7 @@ class RssController(
   @GetMapping("/{id}/rss", produces = ["${MediaType.APPLICATION_RSS_XML_VALUE};charset=UTF-8"])
   fun getRss(@PathVariable id: String): Mono<String> {
     log.info { "Get for $id by load balancer" }
-    return webClient.get().uri("https://$NITTER_INSTANCES/$id/rss")
+    return webClient.get().uri("https://{instance}/{id}/rss", NITTER_INSTANCES, id)
       .retrieve().bodyToMono(String::class.java)
   }
 }

@@ -21,7 +21,7 @@ dependencies {
   implementation("org.springframework.boot:spring-boot-starter-webflux")
   implementation("com.github.CXwudi:kotlin-jvm-inline-logging:1.0.1")
   implementation("com.fasterxml.jackson.module:jackson-module-kotlin")
-  implementation("org.apache.httpcomponents.client5:httpclient5")
+//  implementation("org.apache.httpcomponents.client5:httpclient5")
   implementation("org.jetbrains.kotlin:kotlin-reflect")
   implementation("org.springframework.cloud:spring-cloud-starter-loadbalancer")
   implementation("com.github.ben-manes.caffeine:caffeine")
