@@ -8,20 +8,23 @@ import org.springframework.http.MediaType
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.RestController
-import org.springframework.web.client.RestTemplate
+import org.springframework.web.reactive.function.client.WebClient
+import reactor.core.publisher.Mono
 
 @RestController
 class RssController(
-  @Qualifier("restTemplateForLoadBalancing")
   @LoadBalanced
-  private val restTemplate: RestTemplate
+  @Qualifier("loadBalancingWebClient")
+  webClientBuilder: WebClient.Builder,
 ) {
 
+  private val webClient = webClientBuilder.build()
+
   @GetMapping("/{id}/rss", produces = ["${MediaType.APPLICATION_RSS_XML_VALUE};charset=UTF-8"])
-  fun getRss(@PathVariable id: String): String {
+  fun getRss(@PathVariable id: String): Mono<String> {
     log.info { "Get for $id by load balancer" }
-    return restTemplate.getForObject("https://$NITTER_INSTANCES/$id/rss", String::class.java)!!
+    return webClient.get().uri("https://$NITTER_INSTANCES/$id/rss")
+      .retrieve().bodyToMono(String::class.java)
   }
 }
-
 private val log = KInlineLogging.logger()

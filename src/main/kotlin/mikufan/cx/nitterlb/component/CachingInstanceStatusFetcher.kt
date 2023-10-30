@@ -1,14 +1,12 @@
 package mikufan.cx.nitterlb.component
 
 import mikufan.cx.inlinelogging.KInlineLogging
-import mikufan.cx.nitterlb.model.InstanceHost
 import mikufan.cx.nitterlb.model.InstancesStatus
 import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Component
-import org.springframework.web.client.RestTemplate
-import org.springframework.web.client.getForObject
-import org.springframework.web.util.UriComponentsBuilder
+import org.springframework.web.reactive.function.client.WebClient
+import reactor.core.publisher.Mono
 import java.net.URI
 import java.time.ZonedDateTime
 
@@ -16,23 +14,19 @@ import java.time.ZonedDateTime
 class CachingInstanceStatusFetcher(
   @Value("\${nitter-status-api}")
   private val statusApi: URI,
-  @Qualifier("restTemplateForHealthCheckAndFetching")
-  private val restTemplate: RestTemplate,
+  @Qualifier("fetchingAndHealthCheckWebClient")
+  private val webClient: WebClient,
+//  @Qualifier("restTemplateForHealthCheckAndFetching")
+//  private val restTemplate: RestTemplate,
 ) {
 
   private val lock = Any()
   private var cachedResult: InstancesStatus? = null
 
-  fun getInstancesStatus(): InstancesStatus {
-    synchronized(lock) {
-      if (cachedResult != null && cachedResult!!.lastUpdate.isAfter(ZonedDateTime.now().minusMinutes(15))) {
-        log.debug { "Returning cached result" }
-      } else {
-        log.debug { "Fetching new result from $statusApi" }
-        cachedResult = realGet()
-      }
-    }
-    return cachedResult!!
+  fun getInstancesStatus(): Mono<InstancesStatus> {
+    return Mono.justOrEmpty(cachedResult).filter { it.lastUpdate.isAfter(ZonedDateTime.now().minusMinutes(15)) }
+      .switchIfEmpty(realGet())
+      .doOnNext { synchronized(lock) { cachedResult = it } }
   }
 
 //  fun getInstancesStatus(): InstancesStatus {
@@ -40,8 +34,10 @@ class CachingInstanceStatusFetcher(
 //    return realGet()
 //  }
 
-  internal fun realGet(): InstancesStatus {
-    return restTemplate.getForObject<InstancesStatus>(statusApi)
+  internal fun realGet(): Mono<InstancesStatus> {
+//    return restTemplate.getForObject<InstancesStatus>(statusApi)
+    return webClient.get().uri(statusApi)
+      .retrieve().bodyToMono(InstancesStatus::class.java)
   }
 
 //  fun deepCheckAvailability(instance: InstanceHost): Boolean {

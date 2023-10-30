@@ -1,7 +1,7 @@
 
 user-agent: ${spring.application.name}
-perform-deep-check: false
 nitter-status-api: https://status.d420.de/api/v1/instances
+enable-health-check: false
 
 spring:
   application:
@@ -16,10 +16,6 @@ spring:
         interval: 15m # not used when repeat-health-check is false
         refetch-instances: true # need this because our discovery client does not emit
         refetch-instances-interval: 15m
-        update-results-list: true
       retry:
         enabled: true
         retryable-status-codes: [500, 502, 503, 504, 404, 403, 429]
-    discovery:
-      reactive:
-        enabled: false
